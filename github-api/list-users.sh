@@ -44,7 +44,7 @@ helper() {
     expected_cmd_args=2
     if [ $# -ne $expected_cmd_args ]; then
         echo "Please execute the script with required command-line arguments:"
-        exit 1
+        
     fi
 }
 

@@ -1,8 +1,8 @@
 #!/bin/bash
 ###############
-# Author: Vidhushan
-#About: List out the users with read access in repository
-#Date: 13.11.2025
+# Author : Vidhushan
+# About : List out the users with read access in repository
+# Date : 13.11.2025
 ###############
 helper()
 # GitHub API URL

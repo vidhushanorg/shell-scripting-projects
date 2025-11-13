@@ -1,5 +1,10 @@
 #!/bin/bash
-
+###############
+#Author:Vidhushan
+#About:List out the users with read access in repository
+#Date:13.11.2025
+###############
+helper()
 # GitHub API URL
 API_URL="https://api.github.com"
 
@@ -34,6 +39,12 @@ function list_users_with_read_access {
         echo "Users with read access to ${REPO_OWNER}/${REPO_NAME}:"
         echo "$collaborators"
     fi
+}
+function helper{
+expected_cmd_args=2
+if [ $# -ne $expected_cmd_args];
+then
+    echo"Please execute the script with required cmd args
 }
 
 # Main script

@@ -1,77 +1,54 @@
 #!/bin/bash
-###########################################
-# Author: Vidhushan
-# About : List users with READ access in a GitHub repository
-# Date  : 13.11.2025
-###########################################
-
+###############
+# Author : Vidhushan
+# About : List out the users with read access in repository
+# Date : 13.11.2025
+###############
+helper()
+# GitHub API URL
 API_URL="https://api.github.com"
 
-# ----------- UPDATE THESE 2 VALUES -----------
-USERNAME="your_github_username"
-TOKEN="your_github_pat_token"
-# ---------------------------------------------
+# GitHub username and personal access token
+USERNAME=$username
+TOKEN=$token
 
-REPO_OWNER="vidhushanorg"   # Fixed as per your requirement
-REPO_NAME="$1"              # Only repository name comes from user
+# User and Repository information
+REPO_OWNER=$1
+REPO_NAME=$2
 
-# ---------------- Helper Function ----------------
-helper() {
-    if [ $# -ne 1 ]; then
-        echo "❌ Error: Wrong number of arguments."
-        echo "Usage: $0 <repository_name>"
-        echo "Example: $0 shell-scripting-projects"
-        exit 1
-    fi
-}
-
-# ---------------- GitHub API GET ----------------
-github_api_get() {
+# Function to make a GET request to the GitHub API
+function github_api_get {
     local endpoint="$1"
-    curl -s -u "${USERNAME}:${TOKEN}" "${API_URL}/${endpoint}"
+    local url="${API_URL}/${endpoint}"
+
+    # Send a GET request to the GitHub API with authentication
+    curl -s -u "${USERNAME}:${TOKEN}" "$url"
 }
 
-# --------- List Users With Read Access Function ---------
-list_users_with_read_access() {
-
+# Function to list users with read access to the repository
+function list_users_with_read_access {
     local endpoint="repos/${REPO_OWNER}/${REPO_NAME}/collaborators"
 
-    # Fetch API response
-    response="$(github_api_get "$endpoint")"
+    # Fetch the list of collaborators on the repository
+    collaborators="$(github_api_get "$endpoint" | jq -r '.[] | select(.permissions.pull == true) | .login')"
 
-    echo "--------------------------------------------------"
-    echo "🔍 RAW API RESPONSE (debug output):"
-    echo "$response"
-    echo "--------------------------------------------------"
-
-    # If response starts with '{', it's an error object
-    if echo "$response" | jq -e 'type=="object"' >/dev/null 2>&1; then
-        error_msg=$(echo "$response" | jq -r '.message // empty')
-        if [[ -n "$error_msg" ]]; then
-            echo "❌ GitHub API Error: $error_msg"
-            exit 1
-        fi
-    fi
-
-    # If response is not a JSON array, exit safely
-    if ! echo "$response" | jq -e 'type=="array"' >/dev/null 2>&1; then
-        echo "❌ Unexpected API response format. Cannot continue."
-        exit 1
-    fi
-
-    # Extract READ access users
-    collaborators=$(echo "$response" | jq -r '.[] | select(.permissions.pull == true) | .login')
-
+    # Display the list of collaborators with read access
     if [[ -z "$collaborators" ]]; then
-        echo "ℹ No users with READ access found in ${REPO_OWNER}/${REPO_NAME}."
+        echo "No users with read access found for ${REPO_OWNER}/${REPO_NAME}."
     else
-        echo "✅ Users with READ access in ${REPO_OWNER}/${REPO_NAME}:"
+        echo "Users with read access to ${REPO_OWNER}/${REPO_NAME}:"
         echo "$collaborators"
     fi
 }
+helper {
+    expected_cmd_args=2
+    if [ $# -ne $expected_cmd_args ]; then
+        echo "Please execute the script with required command-line arguments:"
+        
+    fi
+}
 
-# ---------------- Execute ----------------
-helper "$@"
+# Main script
 
-echo "🔎 Checking READ access users in repo: ${REPO_OWNER}/${REPO_NAME}"
+echo "Listing users with read access to ${REPO_OWNER}/${REPO_NAME}..."
 list_users_with_read_access
